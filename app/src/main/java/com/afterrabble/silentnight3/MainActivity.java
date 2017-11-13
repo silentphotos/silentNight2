@@ -1,10 +1,10 @@
 package com.afterrabble.silentnight3;
 
-import android.renderscript.Allocation;
+import android.app.Activity;
+import android.content.Intent;
 
 import android.renderscript.RenderScript;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import android.view.MotionEvent;
@@ -16,11 +16,10 @@ import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.example.android.hdrviewfinder.ScriptC_merge;
-import com.otaliastudios.cameraview.CameraOptions;
 import com.otaliastudios.cameraview.CameraView;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     CameraView cameraView;
 
@@ -31,17 +30,27 @@ public class MainActivity extends AppCompatActivity {
     private Button mCameraButton;
     private SeekBar mHorizSlider;
     private SeekBar mVertSlider;
+    private Button mLibraryButton;
     long lastDown;
     long lastDuration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         cameraView = findViewById(R.id.camera_view);
+
+
+        mLibraryButton = (Button) findViewById(R.id.libraryButton);
+        mLibraryButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                Intent libraryActivity = new Intent(MainActivity.this, PhotosActivity.class);
+                startActivity(libraryActivity);
+            }
+        });
 
 
         mCameraButton = (Button) findViewById(R.id.imageButton);
