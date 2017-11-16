@@ -260,7 +260,7 @@ public class MainActivity extends Activity {
 //            // Decode picture to Bitmap, png or jpg and save
 //        }
         // HEY THIS IS THE NAME THAT GETS ADDED TO THE DB
-        String imageName = new SavePhotoTask().doInBackground(picture);
+        //String imageName = new SavePhotoTask().doInBackground(picture);
 
     }
 
