@@ -1,12 +1,18 @@
 package com.afterrabble.silentnight3;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.renderscript.RenderScript;
 
 import android.os.Bundle;
 
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.MotionEvent;
 import android.view.SoundEffectConstants;
 import android.view.View;
@@ -16,21 +22,28 @@ import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.example.android.hdrviewfinder.ScriptC_merge;
+import com.otaliastudios.cameraview.CameraListener;
+import com.otaliastudios.cameraview.CameraUtils;
 import com.otaliastudios.cameraview.CameraView;
+
+import java.io.ByteArrayOutputStream;
 
 
 public class MainActivity extends Activity {
 
+
+    final int MY_PERMISSIONS_REQUEST_EXTERNAL_WRITE = 123;
     CameraView cameraView;
 
     RenderScript mRS;
     ScriptC_merge mMergeScript;
-
     private int frameCount;
     private Button mCameraButton;
     private SeekBar mHorizSlider;
     private SeekBar mVertSlider;
     private Button mLibraryButton;
+
+
     long lastDown;
     long lastDuration;
 
@@ -42,8 +55,100 @@ public class MainActivity extends Activity {
 
         cameraView = findViewById(R.id.camera_view);
 
+        mCameraButton = findViewById(R.id.imageButton);
 
-        mLibraryButton = (Button) findViewById(R.id.libraryButton);
+        mHorizSlider = findViewById(R.id.h_seekbar);
+        mHorizSlider.setAlpha((float) 0.25);
+
+        mVertSlider = findViewById(R.id.v_seekbar);
+        mVertSlider.setAlpha(0.25f);
+        mVertSlider.setProgress(50);
+
+        mLibraryButton = findViewById(R.id.libraryButton);
+
+        setUIHandlers();
+
+        cameraView.addCameraListener(new CameraListener() {
+            @Override
+            public void onPictureTaken(byte[] picture) {
+                onCapture(picture);
+            }
+        });
+        checkPerms();
+
+
+    }
+
+    private void checkPerms(){
+        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_EXTERNAL_WRITE);
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_EXTERNAL_WRITE);
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_EXTERNAL_WRITE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        cameraView.start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        cameraView.stop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        cameraView.destroy();
+    }
+
+
+
+    private void setUIHandlers(){
         mLibraryButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
@@ -52,11 +157,10 @@ public class MainActivity extends Activity {
             }
         });
 
-
-        mCameraButton = (Button) findViewById(R.id.imageButton);
         mCameraButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent event) {
+
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
                     lastDown = System.currentTimeMillis();
                     view.playSoundEffect(SoundEffectConstants.CLICK);
@@ -64,14 +168,12 @@ public class MainActivity extends Activity {
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     lastDuration = System.currentTimeMillis() - lastDown;
                     mCameraButton.setBackgroundResource(R.drawable.camera_button_image);
+                    captureImage();
                 }
                 return true;
             }
         });
 
-
-        mHorizSlider = (SeekBar) findViewById(R.id.h_seekbar);
-        mHorizSlider.setAlpha((float) 0.25);
         mHorizSlider.setOnSeekBarChangeListener(
                 new SeekBar.OnSeekBarChangeListener() {
                     @Override
@@ -93,9 +195,7 @@ public class MainActivity extends Activity {
         );
 
         //cameraView.setRotation(90); // UnComment this if the preview is rotated 90 degrees.
-        mVertSlider = findViewById(R.id.v_seekbar);
-        mVertSlider.setAlpha(0.25f);
-        mVertSlider.setProgress(50);
+
         mVertSlider.setOnSeekBarChangeListener(
 
                 new SeekBar.OnSeekBarChangeListener() {
@@ -131,29 +231,38 @@ public class MainActivity extends Activity {
         );
     }
 
+    private void captureImage(){
+        cameraView.capturePicture();
+        // if frame count == 1
+        //     take and save image
+        // else
+        // Concurrently:
+        // 1) capture number of frames
+        //    place each frame in a buffer
+        //
+        // 2) compute image from frames
+        // 3) save each frame to apps file System with generated name
+        // 2b) save composite image to filesystem with generated name
+        // 2c) add frame id's to frame db table with pk being generated name, captureID that is the same for all frames,and image location
+        // 2d) add composite id to db table with pk being the generated name, captureID to reference composite images, and image location
 
-    private void onCapture(){
+    }
+
+
+    private void onCapture(byte[] picture){
         //TODO: Implement This
         // Check out AndroidArsenal CameraView for the Documentation on how to take images
+//        if (frameCount >1) {
+//            for (int i = 0; i < frameCount; i++) {
+//                //
+//            }
+//        }else{
+//            // Decode picture to Bitmap, png or jpg and save
+//        }
+        // HEY THIS IS THE NAME THAT GETS ADDED TO THE DB
+        String imageName = new SavePhotoTask().doInBackground(picture);
 
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        cameraView.start();
 
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        cameraView.stop();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        cameraView.destroy();
-    }
 }
