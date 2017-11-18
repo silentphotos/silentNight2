@@ -19,16 +19,13 @@ uchar4 __attribute__((kernel)) mergeFrames(uchar val, uint32_t x) {
     uchar val2 = rsGetElementAt_uchar(gCurrentFrame, x);
 
     uchar newval = val;
-    if (gDoMerge == 1 || ((gCutPointX > 0) && (!(x < gCutPointX)))) {
 
+    if (gDoMerge == 1 || ((gCutPointX > 0) && (!(x < gCutPointX)))) {
         //Complex fusion technique
         newval = val2/2 + val/2;
-
     }
-
     // Store current pixel for next frame
     rsSetElementAt_uchar(gPrevFrame, newval, x);
     rsDebug("Returned val: ", newval);
     return val;
-
 }

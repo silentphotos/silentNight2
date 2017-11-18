@@ -26,8 +26,6 @@ import com.otaliastudios.cameraview.CameraListener;
 import com.otaliastudios.cameraview.CameraUtils;
 import com.otaliastudios.cameraview.CameraView;
 
-import java.io.ByteArrayOutputStream;
-
 
 public class MainActivity extends Activity {
 
@@ -43,9 +41,9 @@ public class MainActivity extends Activity {
     private SeekBar mVertSlider;
     private Button mLibraryButton;
 
-
     long lastDown;
     long lastDuration;
+    int captureMode = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +72,7 @@ public class MainActivity extends Activity {
                 onCapture(picture);
             }
         });
+
         checkPerms();
 
 
@@ -145,8 +144,6 @@ public class MainActivity extends Activity {
         super.onDestroy();
         cameraView.destroy();
     }
-
-
 
     private void setUIHandlers(){
         mLibraryButton.setOnClickListener(new View.OnClickListener(){
@@ -250,19 +247,41 @@ public class MainActivity extends Activity {
 
 
     private void onCapture(byte[] picture){
-        //TODO: Implement This
-        // Check out AndroidArsenal CameraView for the Documentation on how to take images
-//        if (frameCount >1) {
-//            for (int i = 0; i < frameCount; i++) {
-//                //
-//            }
-//        }else{
-//            // Decode picture to Bitmap, png or jpg and save
-//        }
-        // HEY THIS IS THE NAME THAT GETS ADDED TO THE DB
-        String imageName = new SavePhotoTask().doInBackground(picture);
+
+//        HEY THIS IS THE NAME THAT GETS ADDED TO THE DB
+
+
+        switch (captureMode) {
+            case CaptureMode.SINGLE_FRAME:
+                String imageName = new SavePhotoTask().doInBackground(picture);
+                // Add to DB image location: imageName
+                break;
+            case CaptureMode.LOWLIGHT_COMPOSIT:
+                Runnable runner = new Runnable() {
+                    byte[] frame;
+                    @Override
+                    public void run() {
+                        // done
+                        // do something with frame
+                    }
+                };
+                break;
+            case CaptureMode.SUBJECT_COMPOSIT:
+                break;
+        }
+    }
+
+    private void buildComposit(){
 
     }
 
+    private void onCaptureModeButtonTapped(){
+        captureMode++;
+        captureMode = captureMode%3;
+    }
+
+    private void saveImage(byte[] frame){
+
+    }
 
 }
