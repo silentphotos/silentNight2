@@ -9,7 +9,7 @@ public class ImageDbSchema {
         public static final String NAME = "images";
 
         public static final class Cols {
-            public static final String TITLE = "title";
+            public static final String PATH = "path";
             public static final String DATE = "date";
             public static final String GROUP_ID = "group_id";
         }

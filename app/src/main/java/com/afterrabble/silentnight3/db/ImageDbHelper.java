@@ -1,9 +1,12 @@
 package com.afterrabble.silentnight3.db;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-
+import android.util.Log;
+import com.afterrabble.silentnight3.Image;
 import com.afterrabble.silentnight3.db.ImageDbSchema.ImageTable;
 
 /**
@@ -11,25 +14,68 @@ import com.afterrabble.silentnight3.db.ImageDbSchema.ImageTable;
  */
 
 public class ImageDbHelper extends SQLiteOpenHelper {
+    private static final String TAG = "DatabaseHelper";
     private static final int VERSION = 1;
-    private static final String DATABASE_NAME = "crimeBase.db";
+    private static final String DATABASE_NAME = "images.db";
+    private static ImageDbHelper dbHelper = null;
+    private SQLiteDatabase database = null;
+
 
     public ImageDbHelper(Context context) {
         super(context, DATABASE_NAME, null, VERSION);
+    }
+
+    public static ImageDbHelper getInstance(Context context) {
+        if (dbHelper == null) {
+            dbHelper = new ImageDbHelper(context.getApplicationContext());
+        }
+        return dbHelper;
+    }
+
+    public void open() throws SQLException {
+        database = getWritableDatabase();
+    }
+
+    public void close() {
+        close();
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("create table " + ImageTable.NAME + "(" +
                 " _id integer primary key autoincrement, " +
-                ImageTable.Cols.TITLE + ", " +
+                ImageTable.Cols.PATH + ", " +
                 ImageTable.Cols.DATE + ", " +
                 ImageTable.Cols.GROUP_ID +
                 ")"
         );
     }
 
+    public Image createImage(String path, String date, long groupId) {
+        ContentValues values = new ContentValues();
+        values.put("path", path);
+        values.put("date", date);
+        values.put("group_id", groupId);
+
+        long insertId = database.insert("images", null, values);
+
+        if (insertId != -1) {
+            return new Image(insertId, path, date, groupId);
+        }
+
+        Log.e(TAG, "Error inserting data!");
+        return null;
+    }
+
+    public void deleteImage(long id) {
+        database.execSQL("delete from IMAGES where id = \"" + id + "\"");
+    }
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        Log.i(TAG, "Upgrading database from version " + oldVersion + " to "
+                + newVersion);
+        db.execSQL("DROP TABLE IF EXISTS IMAGES");
+        onCreate(db);
     }
 }

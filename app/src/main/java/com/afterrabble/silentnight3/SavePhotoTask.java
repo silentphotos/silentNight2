@@ -5,8 +5,13 @@ import android.os.Environment;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
+import com.afterrabble.silentnight3.db.ImageDbHelper;
+
 import java.io.File;
 import java.io.FileOutputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -14,6 +19,12 @@ import java.util.UUID;
  */
 
 class SavePhotoTask extends AsyncTask<byte[], String, String> {
+
+    private ImageDbHelper dbHelper = null;
+
+    public SavePhotoTask(ImageDbHelper dbHelper){
+        this.dbHelper = dbHelper;
+    }
 
     String imageName;
     @Override
@@ -36,6 +47,12 @@ class SavePhotoTask extends AsyncTask<byte[], String, String> {
 
             fos.write(jpeg[0]);
             fos.close();
+
+            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+            Date date = new Date();
+
+            dbHelper.createImage(photo.getPath(), dateFormat.format(date).toString(), 0);
+
         }
         catch (java.io.IOException e) {
             Log.i("SAVEPHOTOTASK", "Exception in photoCallback", e);

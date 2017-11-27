@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.renderscript.RenderScript;
@@ -21,6 +22,7 @@ import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import com.afterrabble.silentnight3.db.ImageDbHelper;
 import com.example.android.hdrviewfinder.ScriptC_merge;
 import com.otaliastudios.cameraview.CameraListener;
 import com.otaliastudios.cameraview.CameraUtils;
@@ -29,6 +31,7 @@ import com.otaliastudios.cameraview.CameraView;
 
 public class MainActivity extends Activity {
 
+    private ImageDbHelper dbHelper;
 
     final int MY_PERMISSIONS_REQUEST_EXTERNAL_WRITE = 123;
     CameraView cameraView;
@@ -74,6 +77,9 @@ public class MainActivity extends Activity {
         });
 
         checkPerms();
+
+        dbHelper = ImageDbHelper.getInstance(this);
+        dbHelper.open();
 
 
     }
@@ -249,7 +255,8 @@ public class MainActivity extends Activity {
     private void onCapture(byte[] picture){
         switch (captureMode) {
             case CaptureMode.SINGLE_FRAME:
-                String imageName = new SavePhotoTask().doInBackground(picture);
+
+                String imageName = new SavePhotoTask(dbHelper).doInBackground(picture);
                 // Add to DB image location: imageName
                 break;
             case CaptureMode.LOWLIGHT_COMPOSIT:

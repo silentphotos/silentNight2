@@ -5,23 +5,38 @@ package com.afterrabble.silentnight3;
  */
 
 public class Image {
-    private String title;
+    private long id;
+    private String path;
     private String date;
     private long groupId;
 
-    public Image(String title, String date, long groupId) {
-        this.title = title;
+    public Image(String path, String date, long groupId) {
+        this.path = path;
         this.date = date;
         this.groupId = groupId;
     }
 
-    public String getTitle() {
-
-        return title;
+    public Image(long id, String path, String date, long groupId) {
+        this.id = id;
+        this.path = path;
+        this.date = date;
+        this.groupId = groupId;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
     }
 
     public String getDate() {

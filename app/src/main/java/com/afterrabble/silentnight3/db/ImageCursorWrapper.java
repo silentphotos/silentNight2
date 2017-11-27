@@ -17,11 +17,11 @@ public class ImageCursorWrapper extends CursorWrapper {
     }
 
     public Image getIamge() {
-        String title = getString(getColumnIndex(ImageTable.Cols.TITLE));
+        String path = getString(getColumnIndex(ImageTable.Cols.PATH));
         String date = getString(getColumnIndex(ImageTable.Cols.DATE));
         long groupId = getLong(getColumnIndex(ImageTable.Cols.GROUP_ID));
 
-        Image image = new Image(title, date, groupId);
+        Image image = new Image(path, date, groupId);
 
         return image;
     }
