@@ -247,10 +247,6 @@ public class MainActivity extends Activity {
 
 
     private void onCapture(byte[] picture){
-
-//        HEY THIS IS THE NAME THAT GETS ADDED TO THE DB
-
-
         switch (captureMode) {
             case CaptureMode.SINGLE_FRAME:
                 String imageName = new SavePhotoTask().doInBackground(picture);
@@ -269,10 +265,6 @@ public class MainActivity extends Activity {
             case CaptureMode.SUBJECT_COMPOSIT:
                 break;
         }
-    }
-
-    private void buildComposit(){
-
     }
 
     private void onCaptureModeButtonTapped(){
