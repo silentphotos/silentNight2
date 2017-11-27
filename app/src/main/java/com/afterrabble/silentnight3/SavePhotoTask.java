@@ -16,6 +16,7 @@ import java.util.UUID;
 class SavePhotoTask extends AsyncTask<byte[], String, String> {
 
     String imageName;
+
     @Override
     protected String doInBackground(byte[]... jpeg) {
 
@@ -25,7 +26,6 @@ class SavePhotoTask extends AsyncTask<byte[], String, String> {
         imageName = imageName +".jpg";
 
         File photo = new File(Environment.getExternalStorageDirectory(), imageName);
-
 
         if (photo.exists()) {
             photo.delete();

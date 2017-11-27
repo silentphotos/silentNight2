@@ -2,27 +2,22 @@ package com.afterrabble.silentnight3;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.HandlerThread;
+import android.os.AsyncTask;
 import android.renderscript.Allocation;
-import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.util.Log;
 
 import com.example.android.hdrviewfinder.ScriptC_merge;
 import com.otaliastudios.cameraview.CameraUtils;
-import com.otaliastudios.cameraview.CameraView;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 /**
- * Created by AaronR on 11/17/17.
+ * Created by AaronR on 11/27/17.
  */
 
-public class CompositBuilder {
-
+public class CompositBuilder2 extends AsyncTask<Void, Void, Bitmap> {
 
     private String compositID ;
     private int totalFrameCount;
@@ -47,17 +42,28 @@ public class CompositBuilder {
 
     private int framesInQueue;
 
-    public CompositBuilder(Context context, int frameCount, int width, int height, Runnable done) {
+    @Override
+    protected Bitmap doInBackground(Void... voids) {
+        return null;
+    }
+
+    @Override
+    protected void onPostExecute(Bitmap bitmap) {
+        super.onPostExecute(bitmap);
+        done.run();
+    }
+
+    public CompositBuilder2(Context context, int frameCount, int width, int height, Runnable done) {
+        super();
 
         compositID = UUID.randomUUID().toString();
         this.totalFrameCount = frameCount;
-
         this.width = width;
         this.height = height;
         this.framesInQueue = 0;
         this.currFrameCount = 0;
-
         this.done = done;
+
         rS = RenderScript.create(context);
 
     }
@@ -126,5 +132,4 @@ public class CompositBuilder {
     private void updateView(){
         done.run();
     }
-
 }

@@ -6,13 +6,13 @@ import android.content.Intent;
 
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
-import android.renderscript.RenderScript;
 
 import android.os.Bundle;
 
+import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SoundEffectConstants;
 import android.view.View;
@@ -21,29 +21,33 @@ import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
-import com.example.android.hdrviewfinder.ScriptC_merge;
 import com.otaliastudios.cameraview.CameraListener;
 import com.otaliastudios.cameraview.CameraUtils;
 import com.otaliastudios.cameraview.CameraView;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Date;
+
 
 public class MainActivity extends Activity {
 
-
+    final String  TAG = "MAIN ACTIVITY";
     final int MY_PERMISSIONS_REQUEST_EXTERNAL_WRITE = 123;
     CameraView cameraView;
 
-    RenderScript mRS;
-    ScriptC_merge mMergeScript;
     private int frameCount;
     private Button mCameraButton;
     private SeekBar mHorizSlider;
     private SeekBar mVertSlider;
     private Button mLibraryButton;
+    private CompositBuilder builder;
+
 
     long lastDown;
     long lastDuration;
-    int captureMode = 0;
+    int captureMode = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +78,7 @@ public class MainActivity extends Activity {
         });
 
         checkPerms();
-
+        mHorizSlider.setProgress(40);
 
     }
 
@@ -186,7 +190,9 @@ public class MainActivity extends Activity {
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
                         mHorizSlider.setAlpha((float) 0.25);
-                        Toast.makeText(getApplicationContext(), "Frames: " + mHorizSlider.getProgress()/10, Toast.LENGTH_SHORT).show();
+                        frameCount = mHorizSlider.getProgress()/10 + 1;
+                        Toast.makeText(getApplicationContext(), "Frames: " + frameCount, Toast.LENGTH_SHORT).show();
+
                     }
                 }
         );
@@ -250,37 +256,70 @@ public class MainActivity extends Activity {
 
 //        HEY THIS IS THE NAME THAT GETS ADDED TO THE DB
 
-
         switch (captureMode) {
+
             case CaptureMode.SINGLE_FRAME:
                 String imageName = new SavePhotoTask().doInBackground(picture);
                 // Add to DB image location: imageName
                 break;
             case CaptureMode.LOWLIGHT_COMPOSIT:
-                Runnable runner = new Runnable() {
-                    byte[] frame;
-                    @Override
-                    public void run() {
-                        // done
-                        // do something with frame
-                    }
-                };
+
+                if(builder == null){
+
+                    int w = cameraView.getWidth();
+                    int h = cameraView.getHeight();
+                    Log.i(TAG, "onCreate: width" +cameraView.getWidth() );
+                    Log.i(TAG, "onCreate: height" +cameraView.getHeight() );
+                    Log.i(TAG, "onCreate: capture size" + cameraView.getCaptureSize());
+                    Log.i(TAG, "onCreate: preview size" + cameraView.getPreviewSize());
+                    builder = new CompositBuilder(this, frameCount,w,h, new Runnable(){
+                        @Override
+                        public void run() {
+                            stepFinished();
+                        }
+                    });
+                }
+                builder.decodeJpegByteArray(picture);
+                if (!builder.isFull()){
+                    cameraView.capturePicture();
+                }
+
                 break;
             case CaptureMode.SUBJECT_COMPOSIT:
                 break;
         }
     }
 
-    private void buildComposit(){
-
-    }
 
     private void onCaptureModeButtonTapped(){
         captureMode++;
         captureMode = captureMode%3;
     }
 
-    private void saveImage(byte[] frame){
+    private void stepFinished(){
+        Log.i(TAG, "stepFinished:" );
+        String file_path = Environment.getExternalStorageDirectory().getAbsolutePath() +
+                "/SilentNight";
+        File dir = new File(file_path);
+        if(!dir.exists())
+            dir.mkdirs();
+        File file = new File(dir, "compositStep" +builder.getID()+((new Date().getTime()) +".png"));
+        Bitmap bmp = builder.getComposite();
+        try {
+            FileOutputStream fOut = new FileOutputStream(file);
+            bmp.compress(Bitmap.CompressFormat.PNG, 85, fOut);
+            fOut.flush();
+            fOut.close();
+            Log.i(TAG, "stepFinished: SUCCESSFULLY saved Image to " + file_path);
+        }catch (IOException ioe ){
+            ioe.printStackTrace();
+            Log.i(TAG, "stepFinished: Failed to saved Image to " + file_path);
+        }
+        Log.i(TAG, "stepFinished:" );
+    }
+
+    private void saveImage(Bitmap image){
+        // convert Bitmap to jpg
 
     }
 
