@@ -6,6 +6,7 @@ import android.content.ContentResolver;
 import android.content.Intent;
 
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 
 import android.os.Bundle;
@@ -23,6 +24,9 @@ import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import com.afterrabble.silentnight3.db.ImageDbHelper;
+import com.example.android.hdrviewfinder.ScriptC_merge;
+
 import com.otaliastudios.cameraview.CameraListener;
 import com.otaliastudios.cameraview.CameraUtils;
 import com.otaliastudios.cameraview.CameraView;
@@ -34,7 +38,10 @@ import java.io.IOException;
 import java.util.Date;
 
 
+
 public class MainActivity extends Activity {
+
+    private ImageDbHelper dbHelper;
 
     final String  TAG = "MAIN ACTIVITY";
     final int MY_PERMISSIONS_REQUEST_EXTERNAL_WRITE = 123;
@@ -82,6 +89,10 @@ public class MainActivity extends Activity {
 
         checkPerms();
         mHorizSlider.setProgress(40);
+      
+        dbHelper = ImageDbHelper.getInstance(this);
+        dbHelper.open();
+
 
     }
 
@@ -262,12 +273,17 @@ public class MainActivity extends Activity {
         switch (captureMode) {
 
             case CaptureMode.SINGLE_FRAME:
+
                 String imageName = new SavePhotoTask().doInBackground(picture);
                 try {
                     MediaStore.Images.Media.insertImage(getContentResolver(), imageName, "composit", "a composit of images");
                 }catch (FileNotFoundException fnfe){
 
                 }
+
+
+                String imageName = new SavePhotoTask(dbHelper).doInBackground(picture);
+
                 // Add to DB image location: imageName
                 break;
             case CaptureMode.LOWLIGHT_COMPOSIT:
@@ -297,8 +313,6 @@ public class MainActivity extends Activity {
                 break;
         }
     }
-
-
 
     private void onCaptureModeButtonTapped(){
         captureMode++;
