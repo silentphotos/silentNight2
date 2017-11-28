@@ -2,6 +2,7 @@ package com.afterrabble.silentnight3;
 
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
@@ -27,6 +28,7 @@ class SavePhotoTask extends AsyncTask<byte[], String, String> {
     }
 
     String imageName;
+
     @Override
     protected String doInBackground(byte[]... jpeg) {
 
@@ -36,7 +38,6 @@ class SavePhotoTask extends AsyncTask<byte[], String, String> {
         imageName = imageName +".jpg";
 
         File photo = new File(Environment.getExternalStorageDirectory(), imageName);
-
 
         if (photo.exists()) {
             photo.delete();
