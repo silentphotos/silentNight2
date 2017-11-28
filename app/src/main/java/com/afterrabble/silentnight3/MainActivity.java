@@ -2,6 +2,7 @@ package com.afterrabble.silentnight3;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
 
 import android.content.pm.PackageManager;
@@ -10,6 +11,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -26,6 +28,7 @@ import com.otaliastudios.cameraview.CameraUtils;
 import com.otaliastudios.cameraview.CameraView;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
@@ -260,6 +263,11 @@ public class MainActivity extends Activity {
 
             case CaptureMode.SINGLE_FRAME:
                 String imageName = new SavePhotoTask().doInBackground(picture);
+                try {
+                    MediaStore.Images.Media.insertImage(getContentResolver(), imageName, "composit", "a composit of images");
+                }catch (FileNotFoundException fnfe){
+
+                }
                 // Add to DB image location: imageName
                 break;
             case CaptureMode.LOWLIGHT_COMPOSIT:
@@ -289,6 +297,7 @@ public class MainActivity extends Activity {
                 break;
         }
     }
+
 
 
     private void onCaptureModeButtonTapped(){

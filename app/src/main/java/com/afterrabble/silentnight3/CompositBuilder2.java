@@ -17,7 +17,7 @@ import java.util.UUID;
  * Created by AaronR on 11/27/17.
  */
 
-public class CompositBuilder2 extends AsyncTask<Void, Void, Bitmap> {
+public class CompositBuilder2 extends AsyncTask<Byte[], Void, Bitmap> {
 
     private String compositID ;
     private int totalFrameCount;
@@ -43,7 +43,7 @@ public class CompositBuilder2 extends AsyncTask<Void, Void, Bitmap> {
     private int framesInQueue;
 
     @Override
-    protected Bitmap doInBackground(Void... voids) {
+    protected Bitmap doInBackground(Byte[]... jpg) {
         return null;
     }
 
@@ -69,15 +69,7 @@ public class CompositBuilder2 extends AsyncTask<Void, Void, Bitmap> {
     }
 
     public void decodeJpegByteArray(byte[] jpg){
-        decodingFrames ++;
-        CameraUtils.decodeBitmap(jpg, new CameraUtils.BitmapCallback() {
-            @Override
-            public void onBitmapReady(Bitmap bitmap) {
-                decodedFrames++;
-                // send bitmap to CompositeBuilder
-                addFrame(bitmap);
-            }
-        });
+        
     }
 
     public String getID(){

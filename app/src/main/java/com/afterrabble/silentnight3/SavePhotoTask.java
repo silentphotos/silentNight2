@@ -2,6 +2,7 @@ package com.afterrabble.silentnight3;
 
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
