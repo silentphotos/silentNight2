@@ -8,22 +8,23 @@ public class Image {
     private long id;
     private String path;
     private String date;
-    private long groupId;
+    private String groupId;
 
-    public Image(String path, String date, long groupId) {
-        this.path = path;
-        this.date = date;
-        this.groupId = groupId;
-    }
-
-    public Image(long id, String path, String date, long groupId) {
+    public Image(long id, String path, String date, String groupId) {
         this.id = id;
         this.path = path;
         this.date = date;
         this.groupId = groupId;
     }
 
+    public Image(String path, String date, String groupId) {
+        this.path = path;
+        this.date = date;
+        this.groupId = groupId;
+    }
+
     public long getId() {
+
         return id;
     }
 
@@ -47,11 +48,11 @@ public class Image {
         this.date = date;
     }
 
-    public long getGroupId() {
+    public String getGroupId() {
         return groupId;
     }
 
-    public void setGroupId(long groupId) {
+    public void setGroupId(String groupId) {
         this.groupId = groupId;
     }
 }

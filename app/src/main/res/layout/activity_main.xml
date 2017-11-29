@@ -39,10 +39,19 @@
         app:layout_constraintRight_toRightOf="parent" />
 
     <Button
+        android:id="@+id/captureMode"
+        android:layout_width="76dp"
+        android:layout_height="77dp"
+        android:background="@drawable/single_mode"
+        android:scaleX="0.5"
+        android:scaleY="0.5"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
         android:id="@+id/libraryButton"
         android:layout_width="76dp"
         android:layout_height="77dp"
-        android:layout_marginRight="8dp"
         android:background="@drawable/image_library"
         android:scaleX="0.5"
         android:scaleY="0.5"

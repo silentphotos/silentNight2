@@ -2,11 +2,9 @@ package com.afterrabble.silentnight3;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Intent;
 
 import android.content.pm.PackageManager;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 
 import android.os.Bundle;
@@ -25,16 +23,16 @@ import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.afterrabble.silentnight3.db.ImageDbHelper;
-import com.example.android.hdrviewfinder.ScriptC_merge;
 
 import com.otaliastudios.cameraview.CameraListener;
-import com.otaliastudios.cameraview.CameraUtils;
 import com.otaliastudios.cameraview.CameraView;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
@@ -52,12 +50,13 @@ public class MainActivity extends Activity {
     private SeekBar mHorizSlider;
     private SeekBar mVertSlider;
     private Button mLibraryButton;
+    private Button mCaptureMode;
     private CompositBuilder builder;
 
 
     long lastDown;
     long lastDuration;
-    int captureMode = 1;
+    int captureMode = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +76,9 @@ public class MainActivity extends Activity {
         mVertSlider.setProgress(50);
 
         mLibraryButton = findViewById(R.id.libraryButton);
+
+        mCaptureMode = findViewById(R.id.captureMode);
+        mCaptureMode.setAlpha(0.75f);
 
         setUIHandlers();
 
@@ -169,6 +171,34 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
                 Intent libraryActivity = new Intent(MainActivity.this, PhotosActivity.class);
                 startActivity(libraryActivity);
+            }
+        });
+
+        mCaptureMode.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                if(captureMode < 2){
+                    captureMode++;
+                } else {
+                    captureMode = 0;
+                }
+
+                Toast.makeText(getApplicationContext(), captureMode+"", Toast.LENGTH_SHORT).show();
+
+
+                switch(captureMode){
+                    case SessionInfo.SINGLE_FRAME:
+                        mCaptureMode.setBackgroundResource(R.drawable.single_mode);
+                        break;
+                    case SessionInfo.LOWLIGHT_COMPOSIT:
+                        mCaptureMode.setBackgroundResource(R.drawable.composite_mode);
+                        break;
+                    case SessionInfo.SUBJECT_COMPOSIT:
+                        mCaptureMode.setBackgroundResource(R.drawable.subject_mode);
+                        break;
+                    default:
+                        break;
+                }
             }
         });
 
@@ -272,9 +302,12 @@ public class MainActivity extends Activity {
 
         switch (captureMode) {
 
-            case CaptureMode.SINGLE_FRAME:
+            case SessionInfo.SINGLE_FRAME:
 
                 String imageName = new SavePhotoTask().doInBackground(picture);
+                saveImageToDb(imageName);
+                updateSessionId();
+
                 try {
                     MediaStore.Images.Media.insertImage(getContentResolver(), imageName, "composit", "a composit of images");
                 }catch (FileNotFoundException fnfe){
@@ -282,11 +315,10 @@ public class MainActivity extends Activity {
                 }
 
 
-                String imageName = new SavePhotoTask(dbHelper).doInBackground(picture);
 
                 // Add to DB image location: imageName
                 break;
-            case CaptureMode.LOWLIGHT_COMPOSIT:
+            case SessionInfo.LOWLIGHT_COMPOSIT:
 
                 if(builder == null){
 
@@ -309,8 +341,23 @@ public class MainActivity extends Activity {
                 }
 
                 break;
-            case CaptureMode.SUBJECT_COMPOSIT:
+            case SessionInfo.SUBJECT_COMPOSIT:
                 break;
+        }
+    }
+
+    private void saveImageToDb(String pathToImage){
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Date date = new Date();
+        dbHelper.createImage(pathToImage, dateFormat.format(date).toString(), SessionInfo.currentSessionID);
+    }
+
+    private void updateSessionId(){
+        switch (captureMode){
+            case SessionInfo.LOWLIGHT_COMPOSIT: break;
+            case SessionInfo.SINGLE_FRAME: SessionInfo.resetSessionID(); break;
+            case SessionInfo.SUBJECT_COMPOSIT: break;
+            default: break;
         }
     }
 

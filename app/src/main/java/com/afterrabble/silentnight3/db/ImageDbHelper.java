@@ -51,7 +51,7 @@ public class ImageDbHelper extends SQLiteOpenHelper {
         );
     }
 
-    public Image createImage(String path, String date, long groupId) {
+    public Image createImage(String path, String date, String groupId) {
         ContentValues values = new ContentValues();
         values.put("path", path);
         values.put("date", date);

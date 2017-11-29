@@ -22,11 +22,6 @@ import java.util.UUID;
 class SavePhotoTask extends AsyncTask<byte[], String, String> {
 
     private ImageDbHelper dbHelper = null;
-
-    public SavePhotoTask(ImageDbHelper dbHelper){
-        this.dbHelper = dbHelper;
-    }
-
     String imageName;
 
     @Override
@@ -49,10 +44,10 @@ class SavePhotoTask extends AsyncTask<byte[], String, String> {
             fos.write(jpeg[0]);
             fos.close();
 
-            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-            Date date = new Date();
-
-            dbHelper.createImage(photo.getPath(), dateFormat.format(date).toString(), 0);
+//            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+//            Date date = new Date();
+//
+//            dbHelper.createImage(photo.getPath(), dateFormat.format(date).toString(), 0);
 
         }
         catch (java.io.IOException e) {
@@ -60,7 +55,7 @@ class SavePhotoTask extends AsyncTask<byte[], String, String> {
             imageName = null;
         }
 
-        return(imageName);
+        return(photo.getPath());
     }
 
     @Override
