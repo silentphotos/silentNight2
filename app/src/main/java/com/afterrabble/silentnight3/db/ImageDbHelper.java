@@ -2,12 +2,16 @@ package com.afterrabble.silentnight3.db;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 import com.afterrabble.silentnight3.Image;
 import com.afterrabble.silentnight3.db.ImageDbSchema.ImageTable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by rendenyoder on 11/15/17.
@@ -49,6 +53,24 @@ public class ImageDbHelper extends SQLiteOpenHelper {
                 ImageTable.Cols.GROUP_ID +
                 ")"
         );
+    }
+
+    public List<Image> getAllStudents() {
+        List<Image> images = new ArrayList<>();
+
+        Cursor cursor = database.rawQuery("select * from images", null);
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            Image image = new Image();
+            image.setId(cursor.getLong(0));
+            image.setPath(cursor.getString(1));
+            image.setDate(cursor.getString(2));
+            image.setGroupId(cursor.getString(3));
+            images.add(image);
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return images;
     }
 
     public Image createImage(String path, String date, String groupId) {

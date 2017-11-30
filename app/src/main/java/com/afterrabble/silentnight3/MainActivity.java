@@ -78,7 +78,6 @@ public class MainActivity extends Activity {
         mLibraryButton = findViewById(R.id.libraryButton);
 
         mCaptureMode = findViewById(R.id.captureMode);
-        mCaptureMode.setAlpha(0.75f);
 
         setUIHandlers();
 
@@ -91,7 +90,7 @@ public class MainActivity extends Activity {
 
         checkPerms();
         mHorizSlider.setProgress(40);
-      
+
         dbHelper = ImageDbHelper.getInstance(this);
         dbHelper.open();
 
@@ -171,6 +170,9 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
                 Intent libraryActivity = new Intent(MainActivity.this, PhotosActivity.class);
                 startActivity(libraryActivity);
+                for(Image each : dbHelper.getAllStudents()){
+                    System.out.println(each);
+                }
             }
         });
 
@@ -182,9 +184,6 @@ public class MainActivity extends Activity {
                 } else {
                     captureMode = 0;
                 }
-
-                Toast.makeText(getApplicationContext(), captureMode+"", Toast.LENGTH_SHORT).show();
-
 
                 switch(captureMode){
                     case SessionInfo.SINGLE_FRAME:

@@ -10,6 +10,8 @@ public class Image {
     private String date;
     private String groupId;
 
+    public Image(){}
+
     public Image(long id, String path, String date, String groupId) {
         this.id = id;
         this.path = path;
@@ -54,5 +56,13 @@ public class Image {
 
     public void setGroupId(String groupId) {
         this.groupId = groupId;
+    }
+
+    @Override
+    public String toString() {
+        return  "id: " + id + " | " +
+                "path: " + path + " | " +
+                "date: " + date + " | " +
+                "group_id : " + groupId;
     }
 }
