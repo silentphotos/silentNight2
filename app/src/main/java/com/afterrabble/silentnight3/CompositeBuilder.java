@@ -1,16 +1,15 @@
 package com.afterrabble.silentnight3;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.HandlerThread;
+import android.os.AsyncTask;
 import android.renderscript.Allocation;
-import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.util.Log;
 
 import com.example.android.hdrviewfinder.ScriptC_merge;
 import com.otaliastudios.cameraview.CameraUtils;
-import com.otaliastudios.cameraview.CameraView;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -18,11 +17,10 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Created by AaronR on 11/17/17.
+ * Created by AaronR on 11/27/17.
  */
 
-public class CompositBuilder {
-
+public class CompositeBuilder extends Thread {
 
     private String compositID ;
     private int totalFrameCount;
@@ -36,9 +34,10 @@ public class CompositBuilder {
     private Allocation prevAllocation;
     private Allocation currentAllocation;
     private Allocation outAllocation;
-    private Bitmap composit;
+    private Bitmap composite;
     private Runnable done;
-
+    private List<byte[]> jpgs;
+    private Context mContext;
 
     private RenderScript rS;
     ScriptC_merge mergeScript;
@@ -47,22 +46,39 @@ public class CompositBuilder {
 
     private int framesInQueue;
 
-    public CompositBuilder(Context context, int frameCount, int width, int height, Runnable done) {
-
+    public CompositeBuilder(Context context, int frameCount, int width, int height, Runnable done) {
+        super();
         compositID = UUID.randomUUID().toString();
         this.totalFrameCount = frameCount;
-
         this.width = width;
         this.height = height;
         this.framesInQueue = 0;
         this.currFrameCount = 0;
-
         this.done = done;
-        rS = RenderScript.create(context);
+        this.jpgs = jpgs;
+        this.mContext = context;
+        rS = RenderScript.create(mContext);
+        jpgs = new ArrayList();
+
 
     }
 
-    public void decodeJpegByteArray(byte[] jpg){
+    @Override
+    public void start(){
+        super.start();
+        System.out.println("Thread Is Running");
+        for (int i = 0; i < jpgs.size(); i++) {
+            decodeJpegByteArray(jpgs.get(i));
+        }
+
+    }
+
+    public void addImage(byte[] frame){
+        jpgs.add(frame);
+    }
+
+    private void decodeJpegByteArray(byte[] jpg){
+
         decodingFrames ++;
         CameraUtils.decodeBitmap(jpg, new CameraUtils.BitmapCallback() {
             @Override
@@ -72,6 +88,7 @@ public class CompositBuilder {
                 addFrame(bitmap);
             }
         });
+
     }
 
     public String getID(){
@@ -79,9 +96,8 @@ public class CompositBuilder {
     }
 
     public boolean isFull(){
-        return decodingFrames == totalFrameCount;
+        return jpgs.size() == totalFrameCount;
     }
-
 
     public void addFrame(Bitmap frame){
 
@@ -90,12 +106,13 @@ public class CompositBuilder {
             framesInQueue++;
             build(frame);
         }else{
-            composit = frame;
+            composite = frame;
             initRS();
         }
     }
 
     private void build(Bitmap frame){
+
         // process each frame as it's added
         // TODO: IMPLEMENT THIS;
         currentAllocation = Allocation.createFromBitmap(rS, frame);
@@ -103,28 +120,40 @@ public class CompositBuilder {
         mergeScript.set_gPrevFrame(prevAllocation);
         long startTime =  new Date().getTime();
         mergeScript.forEach_mergeFrames(prevAllocation, outAllocation);
-        Log.i("COMPOSITBUILDER", "build: mergeDuraiton " + (new Date().getTime() - startTime));
-        outAllocation.copyTo(composit);
-        Log.i("COMPOSITBUILDER", "build: copyToDuration " + (new Date().getTime() - startTime));
+        Log.i("COMPOSITEBUILDER", "build: mergeDuraiton " + (new Date().getTime() - startTime));
+        outAllocation.copyTo(composite);
+        Log.i("COMPOSITEBUILDER", "build: copyToDuration " + (new Date().getTime() - startTime));
         // callback and tell view to update with new composite
         updateView();
         framesInQueue -=1;
+
     }
 
     private void initRS(){
         // init allocations
-        prevAllocation = Allocation.createFromBitmap(rS, composit);
+        prevAllocation = Allocation.createFromBitmap(rS, composite);
         outAllocation = Allocation.createTyped(rS, prevAllocation.getType());
         currentAllocation = Allocation.createTyped(rS, prevAllocation.getType());
         mergeScript = new ScriptC_merge(rS);
+
     }
 
     public Bitmap getComposite(){
-        return composit;
+        return composite;
     }
 
     private void updateView(){
-        done.run();
+        ((MainActivity) mContext).runOnUiThread(done);
+        System.out.println("Finished");
+        if (isFinished()){
+            System.out.println("+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=\n+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=\n+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=");
+            System.out.println("Finished");
+            System.out.println("+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=\n+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=\n+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=");
+        }
+        //
     }
 
+    public boolean isFinished(){
+        return framesInQueue <=1;
+    }
 }
