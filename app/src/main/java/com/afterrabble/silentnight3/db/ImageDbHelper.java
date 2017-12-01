@@ -55,7 +55,7 @@ public class ImageDbHelper extends SQLiteOpenHelper {
         );
     }
 
-    public List<Image> getAllStudents() {
+    public List<Image> getAllImages() {
         List<Image> images = new ArrayList<>();
 
         Cursor cursor = database.rawQuery("select * from images", null);
@@ -72,6 +72,21 @@ public class ImageDbHelper extends SQLiteOpenHelper {
         cursor.close();
         return images;
     }
+
+    public List<String> getAllImagePaths() {
+        List<String> paths = new ArrayList<>();
+
+        Cursor cursor = database.rawQuery("select path from images", null);
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            paths.add(cursor.getString(0));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return paths;
+    }
+
+
 
     public Image createImage(String path, String date, String groupId) {
         ContentValues values = new ContentValues();

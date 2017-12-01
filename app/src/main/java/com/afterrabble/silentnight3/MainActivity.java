@@ -170,9 +170,6 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
                 Intent libraryActivity = new Intent(MainActivity.this, PhotosActivity.class);
                 startActivity(libraryActivity);
-                for(Image each : dbHelper.getAllStudents()){
-                    System.out.println(each);
-                }
             }
         });
 
