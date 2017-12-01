@@ -19,6 +19,7 @@ uchar4 __attribute__((kernel)) mergeFrames(uchar4 in, uint32_t x, uint32_t y) {
     //Complex fusion technique
     newval = val2/2 + in/2;
 
+
     // Store current pixel for next frame
     rsSetElementAt_uchar4(gPrevFrame, newval, x, y);
     rsDebug("Returned val: ", newval);

@@ -21,15 +21,15 @@ import java.util.UUID;
  */
 
 public class CompositeBuilder extends Thread {
-
+    private static String TAG = "COMPOSITEBUILDER";
     private String compositID ;
     private int totalFrameCount;
     private int currFrameCount;
-
+    private int finishedFrameCount;
     private int width;
     private int height;
-    private int decodedFrames;
-    private int decodingFrames;
+
+
 
     private Allocation prevAllocation;
     private Allocation currentAllocation;
@@ -44,7 +44,6 @@ public class CompositeBuilder extends Thread {
 
     // Maybe
 
-    private int framesInQueue;
 
     public CompositeBuilder(Context context, int frameCount, int width, int height, Runnable done) {
         super();
@@ -52,8 +51,9 @@ public class CompositeBuilder extends Thread {
         this.totalFrameCount = frameCount;
         this.width = width;
         this.height = height;
-        this.framesInQueue = 0;
+
         this.currFrameCount = 0;
+        this.finishedFrameCount = 0;
         this.done = done;
         this.jpgs = jpgs;
         this.mContext = context;
@@ -79,11 +79,11 @@ public class CompositeBuilder extends Thread {
 
     private void decodeJpegByteArray(byte[] jpg){
 
-        decodingFrames ++;
+
         CameraUtils.decodeBitmap(jpg, new CameraUtils.BitmapCallback() {
             @Override
             public void onBitmapReady(Bitmap bitmap) {
-                decodedFrames++;
+
                 // send bitmap to CompositeBuilder
                 addFrame(bitmap);
             }
@@ -103,7 +103,7 @@ public class CompositeBuilder extends Thread {
 
         currFrameCount++;
         if(currFrameCount > 1){
-            framesInQueue++;
+
             build(frame);
         }else{
             composite = frame;
@@ -120,12 +120,12 @@ public class CompositeBuilder extends Thread {
         mergeScript.set_gPrevFrame(prevAllocation);
         long startTime =  new Date().getTime();
         mergeScript.forEach_mergeFrames(prevAllocation, outAllocation);
-        Log.i("COMPOSITEBUILDER", "build: mergeDuraiton " + (new Date().getTime() - startTime));
+        Log.i(TAG, "build: mergeDuraiton " + (new Date().getTime() - startTime));
         outAllocation.copyTo(composite);
-        Log.i("COMPOSITEBUILDER", "build: copyToDuration " + (new Date().getTime() - startTime));
+        Log.i(TAG, "build: copyToDuration " + (new Date().getTime() - startTime));
         // callback and tell view to update with new composite
+        finishedFrameCount ++;
         updateView();
-        framesInQueue -=1;
 
     }
 
@@ -154,6 +154,7 @@ public class CompositeBuilder extends Thread {
     }
 
     public boolean isFinished(){
-        return framesInQueue <=1;
+        return finishedFrameCount ==  totalFrameCount-1;
+
     }
 }

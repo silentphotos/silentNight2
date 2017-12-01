@@ -51,7 +51,7 @@ public class MainActivity extends Activity {
     private SeekBar mVertSlider;
     private Button mLibraryButton;
     private Button mCaptureMode;
-    private CompositBuilder builder;
+    private CompositeBuilder builder;
 
 
     long lastDown;
@@ -130,19 +130,16 @@ public class MainActivity extends Activity {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
+                    // permission was granted, yay!
+
 
                 } else {
 
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
+                    // permission denied, boo!
                 }
                 return;
             }
 
-            // other 'case' lines to check for other
-            // permissions this app might request
         }
     }
 
@@ -275,7 +272,9 @@ public class MainActivity extends Activity {
     }
 
     private void captureImage(){
-        cameraView.capturePicture();
+        //cameraView.capturePicture();
+        cameraView.captureSnapshot();
+
         // if frame count == 1
         //     take and save image
         // else
@@ -300,40 +299,35 @@ public class MainActivity extends Activity {
 
             case SessionInfo.SINGLE_FRAME:
 
-                String imageName = new SavePhotoTask().doInBackground(picture);
-                saveImageToDb(imageName);
+                String imagePath = new SavePhotoTask().doInBackground(picture);
+                saveImageToDb(imagePath);
                 updateSessionId();
-
-                try {
-                    MediaStore.Images.Media.insertImage(getContentResolver(), imageName, "composit", "a composit of images");
-                }catch (FileNotFoundException fnfe){
-
-                }
-
+                notifyMediaStore(imagePath);
 
 
                 // Add to DB image location: imageName
                 break;
             case SessionInfo.LOWLIGHT_COMPOSIT:
 
-                if(builder == null){
+                if(builder == null || builder.isFinished()){
 
-                    int w = cameraView.getWidth();
-                    int h = cameraView.getHeight();
-                    Log.i(TAG, "onCreate: width" +cameraView.getWidth() );
-                    Log.i(TAG, "onCreate: height" +cameraView.getHeight() );
-                    Log.i(TAG, "onCreate: capture size" + cameraView.getCaptureSize());
-                    Log.i(TAG, "onCreate: preview size" + cameraView.getPreviewSize());
-                    builder = new CompositBuilder(this, frameCount,w,h, new Runnable(){
+                    int w = cameraView.getPreviewSize().getWidth();
+                    int h = cameraView.getPreviewSize().getHeight();
+
+                    builder = new CompositeBuilder(this, frameCount,w,h, new Runnable(){
                         @Override
                         public void run() {
                             stepFinished();
                         }
                     });
                 }
-                builder.decodeJpegByteArray(picture);
+
+                builder.addImage(picture);
                 if (!builder.isFull()){
-                    cameraView.capturePicture();
+                    cameraView.captureSnapshot();
+                }else{
+                    Toast.makeText(this,"Processing...",Toast.LENGTH_SHORT).show();
+                    builder.start();
                 }
 
                 break;
@@ -363,30 +357,46 @@ public class MainActivity extends Activity {
     }
 
     private void stepFinished(){
-        Log.i(TAG, "stepFinished:" );
-        String file_path = Environment.getExternalStorageDirectory().getAbsolutePath() +
-                "/SilentNight";
-        File dir = new File(file_path);
-        if(!dir.exists())
-            dir.mkdirs();
-        File file = new File(dir, "compositStep" +builder.getID()+((new Date().getTime()) +".png"));
-        Bitmap bmp = builder.getComposite();
-        try {
-            FileOutputStream fOut = new FileOutputStream(file);
-            bmp.compress(Bitmap.CompressFormat.PNG, 85, fOut);
-            fOut.flush();
-            fOut.close();
-            Log.i(TAG, "stepFinished: SUCCESSFULLY saved Image to " + file_path);
-        }catch (IOException ioe ){
-            ioe.printStackTrace();
-            Log.i(TAG, "stepFinished: Failed to saved Image to " + file_path);
+        if (builder.isFinished()) {
+
+            Log.i(TAG, "stepFinished:");
+            String file_path = Environment.getExternalStorageDirectory().getAbsolutePath();
+            File dir = new File(file_path);
+            if (!dir.exists())
+                dir.mkdirs();
+            File file = new File(dir, "compositStep" + builder.getID() + ((new Date().getTime()) + ".png"));
+            Bitmap bmp = builder.getComposite();
+            try {
+                FileOutputStream fOut = new FileOutputStream(file);
+                bmp.compress(Bitmap.CompressFormat.PNG, 85, fOut);
+                fOut.flush();
+                fOut.close();
+                Log.i(TAG, "stepFinished: SUCCESSFULLY saved Image to " + file_path);
+                notifyMediaStore(file.getPath());
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+                Log.i(TAG, "stepFinished: Failed to saved Image to " + file_path);
+
+            }
+            Log.i(TAG, "stepFinished:");
+
+            killBilder();
         }
-        Log.i(TAG, "stepFinished:" );
-    }
-
-    private void saveImage(Bitmap image){
-        // convert Bitmap to jpg
 
     }
+
+    private  void notifyMediaStore(String imLocation){
+        try{
+            MediaStore.Images.Media.insertImage(getContentResolver(), imLocation, "A Silent Photo", "Captured by Silent Night");
+        }catch(Exception e){
+            System.out.println(e);
+        }
+    }
+    private void killBilder(){
+        Toast.makeText(this,"Done!",Toast.LENGTH_SHORT).show();
+        builder.interrupt();
+        builder = null;
+    }
+
 
 }
