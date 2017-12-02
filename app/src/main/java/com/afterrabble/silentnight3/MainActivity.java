@@ -20,12 +20,16 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afterrabble.silentnight3.db.ImageDbHelper;
 
 import com.otaliastudios.cameraview.CameraListener;
 import com.otaliastudios.cameraview.CameraView;
+import com.otaliastudios.cameraview.Flash;
+import com.otaliastudios.cameraview.Gesture;
+import com.otaliastudios.cameraview.GestureAction;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -52,6 +56,7 @@ public class MainActivity extends Activity {
     private Button mLibraryButton;
     private Button mCaptureMode;
     private CompositeBuilder builder;
+    private TextView mBrightnessLabel;
 
 
     long lastDown;
@@ -70,6 +75,10 @@ public class MainActivity extends Activity {
 
         mHorizSlider = findViewById(R.id.h_seekbar);
         mHorizSlider.setAlpha((float) 0.25);
+        if(captureMode == SessionInfo.SINGLE_FRAME){
+            mHorizSlider.setAlpha(0);
+            mHorizSlider.setEnabled(false);
+        }
 
         mVertSlider = findViewById(R.id.v_seekbar);
         mVertSlider.setAlpha(0.25f);
@@ -78,6 +87,7 @@ public class MainActivity extends Activity {
         mLibraryButton = findViewById(R.id.libraryButton);
 
         mCaptureMode = findViewById(R.id.captureMode);
+        mBrightnessLabel = findViewById(R.id.brightnessLabel);
 
         setUIHandlers();
 
@@ -162,6 +172,12 @@ public class MainActivity extends Activity {
     }
 
     private void setUIHandlers(){
+
+        cameraView.mapGesture(Gesture.PINCH, GestureAction.ZOOM); // Pinch to zoom!
+        cameraView.mapGesture(Gesture.TAP, GestureAction.FOCUS_WITH_MARKER); // Tap to focus!
+        cameraView.mapGesture(Gesture.LONG_TAP, GestureAction.CAPTURE); // Long tap to shoot!
+
+
         mLibraryButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
@@ -182,12 +198,18 @@ public class MainActivity extends Activity {
                 switch(captureMode){
                     case SessionInfo.SINGLE_FRAME:
                         mCaptureMode.setBackgroundResource(R.drawable.single_mode);
+                        mHorizSlider.setAlpha(0);
+                        mHorizSlider.setEnabled(false);
                         break;
                     case SessionInfo.LOWLIGHT_COMPOSIT:
                         mCaptureMode.setBackgroundResource(R.drawable.composite_mode);
+                        mHorizSlider.setAlpha(1);
+                        mHorizSlider.setEnabled(true);
                         break;
                     case SessionInfo.SUBJECT_COMPOSIT:
                         mCaptureMode.setBackgroundResource(R.drawable.subject_mode);
+                        mHorizSlider.setAlpha(1);
+                        mHorizSlider.setEnabled(true);
                         break;
                     default:
                         break;
@@ -222,11 +244,13 @@ public class MainActivity extends Activity {
                     @Override
                     public void onStartTrackingTouch(SeekBar seekBar) {
                         mHorizSlider.setAlpha(1);
+
                     }
 
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
                         mHorizSlider.setAlpha((float) 0.25);
+
                         frameCount = mHorizSlider.getProgress()/10 + 1;
                         Toast.makeText(getApplicationContext(), "Frames: " + frameCount, Toast.LENGTH_SHORT).show();
 
@@ -246,27 +270,29 @@ public class MainActivity extends Activity {
                         float min = cameraView.getCameraOptions().getExposureCorrectionMinValue();
                         float max = cameraView.getCameraOptions().getExposureCorrectionMaxValue();
                         cameraView.setExposureCorrection((Math.abs(min - max)/100.0f * seekBar.getProgress()) - (max - min)/2);
-                        System.out.println(cameraView.getExposureCorrection());
+                        mBrightnessLabel.setText((mVertSlider.getProgress()-50)*2 + "%");
 
                     }
 
                     @Override
                     public void onStartTrackingTouch(SeekBar seekBar) {
                         mVertSlider.setAlpha(1);
+                        mBrightnessLabel.setAlpha(1);
+
                     }
 
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
                         mVertSlider.setAlpha((float) 0.25);
+                        mBrightnessLabel.setAlpha((float) 0.25);
                         // ISO Might not bee the correct term here
-                        Toast.makeText(getApplicationContext(), "ISO: " + calcISO(mVertSlider.getProgress()), Toast.LENGTH_SHORT).show();
+                        mBrightnessLabel.setText((mVertSlider.getProgress()-50)*2 + "%");
 
                     }
 
-                    public String calcISO(int in){
-                        int mapped = (in / 20) + 1;
-                        return ((int)(25 * Math.pow(2, 1 + mapped))) + "";
-                    }
+
+
+
                 }
         );
     }

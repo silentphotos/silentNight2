@@ -1,21 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/colorPrimaryDark"
-    tools:context="com.afterrabble.silentnight3.MainActivity">
+                                             xmlns:app="http://schemas.android.com/apk/res-auto"
+                                             xmlns:tools="http://schemas.android.com/tools"
+                                             android:layout_width="match_parent"
+                                             android:layout_height="match_parent"
+                                             android:background="@color/colorPrimaryDark"
+                                             tools:context="com.afterrabble.silentnight3.MainActivity">
 
 
     <com.otaliastudios.cameraview.CameraView
         android:id="@+id/camera_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="0dp"
-        android:layout_marginEnd="0dp"
-        android:layout_marginStart="0dp"
-        android:layout_marginTop="0dp"
         android:keepScreenOn="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -36,7 +32,7 @@
         app:layout_constraintBottom_toTopOf="@+id/imageButton"
         app:layout_constraintHorizontal_bias="0.513"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:layout_constraintRight_toRightOf="parent"/>
 
     <Button
         android:id="@+id/captureMode"
@@ -46,7 +42,7 @@
         android:scaleX="0.5"
         android:scaleY="0.5"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"/>
 
     <Button
         android:id="@+id/libraryButton"
@@ -56,27 +52,24 @@
         android:scaleX="0.5"
         android:scaleY="0.5"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:layout_constraintRight_toRightOf="parent"/>
 
     <com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBarWrapper
         android:id="@+id/verticalSeekBarWrapper"
         android:layout_width="55dp"
         android:layout_height="303dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/h_seekbar"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.453">
+        >
 
         <com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar
             android:id="@+id/v_seekbar"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:splitTrack="false"
-            app:seekBarRotation="CW270" /> <!-- Rotation: CW90 or CW270 -->
+            app:seekBarRotation="CW270"/> <!-- Rotation: CW90 or CW270 -->
     </com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBarWrapper>
 
     <Button
@@ -94,7 +87,21 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:layout_constraintRight_toRightOf="parent"/>
+
+    <TextView
+        android:id="@+id/brightnessLabel"
+        android:layout_width="50dp"
+        android:layout_height="29dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="0%"
+        android:textColor="#FFF"
+        app:layout_constraintBottom_toTopOf="@+id/h_seekbar"
+        app:layout_constraintEnd_toEndOf="@+id/verticalSeekBarWrapper"
+        app:layout_constraintTop_toBottomOf="@+id/verticalSeekBarWrapper"/>
 
 </android.support.constraint.ConstraintLayout>
 
