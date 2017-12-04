@@ -20,20 +20,6 @@
 
     </com.otaliastudios.cameraview.CameraView>
 
-    <SeekBar
-        android:id="@+id/h_seekbar"
-        android:layout_width="332dp"
-        android:layout_height="24dp"
-        android:layout_marginBottom="0dp"
-        android:layout_marginEnd="0dp"
-        android:layout_marginLeft="0dp"
-        android:layout_marginRight="0dp"
-        android:layout_marginStart="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/imageButton"
-        app:layout_constraintHorizontal_bias="0.513"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
-
     <Button
         android:id="@+id/captureMode"
         android:layout_width="76dp"
@@ -57,12 +43,11 @@
     <com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBarWrapper
         android:id="@+id/verticalSeekBarWrapper"
         android:layout_width="55dp"
-        android:layout_height="303dp"
+        android:layout_height="332dp"
+        android:layout_marginBottom="30dp"
         android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        >
+        app:layout_constraintBottom_toBottomOf="@+id/brightnessLabel"
+        app:layout_constraintRight_toRightOf="parent">
 
         <com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar
             android:id="@+id/v_seekbar"
@@ -89,19 +74,36 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
 
+    <Button
+        android:id="@+id/frameCountButton"
+        android:layout_width="54dp"
+        android:layout_height="49dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:alpha="0"
+        android:background="@android:color/transparent"
+        android:text="2"
+        android:textColor="#FFF"
+        app:layout_constraintBottom_toBottomOf="@+id/captureMode"
+        app:layout_constraintEnd_toStartOf="@+id/imageButton"
+        app:layout_constraintStart_toEndOf="@+id/captureMode"
+        app:layout_constraintTop_toTopOf="@+id/captureMode"/>
+
     <TextView
         android:id="@+id/brightnessLabel"
         android:layout_width="50dp"
         android:layout_height="29dp"
         android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="8dp"
+
         android:gravity="center"
         android:text="0%"
         android:textColor="#FFF"
-        app:layout_constraintBottom_toTopOf="@+id/h_seekbar"
+        app:layout_constraintBottom_toTopOf="@+id/libraryButton"
         app:layout_constraintEnd_toEndOf="@+id/verticalSeekBarWrapper"
-        app:layout_constraintTop_toBottomOf="@+id/verticalSeekBarWrapper"/>
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/verticalSeekBarWrapper"/>
 
 </android.support.constraint.ConstraintLayout>
 

@@ -10,6 +10,9 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 
 import android.os.Environment;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -27,12 +30,10 @@ import com.afterrabble.silentnight3.db.ImageDbHelper;
 
 import com.otaliastudios.cameraview.CameraListener;
 import com.otaliastudios.cameraview.CameraView;
-import com.otaliastudios.cameraview.Flash;
 import com.otaliastudios.cameraview.Gesture;
 import com.otaliastudios.cameraview.GestureAction;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -46,17 +47,19 @@ public class MainActivity extends Activity {
     private ImageDbHelper dbHelper;
 
     final String  TAG = "MAIN ACTIVITY";
+    private final int maxFrameCountAllowed = 5;
+
     final int MY_PERMISSIONS_REQUEST_EXTERNAL_WRITE = 123;
     CameraView cameraView;
 
     private int frameCount;
     private Button mCameraButton;
-    private SeekBar mHorizSlider;
     private SeekBar mVertSlider;
     private Button mLibraryButton;
     private Button mCaptureMode;
     private CompositeBuilder builder;
     private TextView mBrightnessLabel;
+    private Button frameCountButton;
 
 
     long lastDown;
@@ -65,30 +68,13 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        cameraView = findViewById(R.id.camera_view);
-
-        mCameraButton = findViewById(R.id.imageButton);
-
-        mHorizSlider = findViewById(R.id.h_seekbar);
-        mHorizSlider.setAlpha((float) 0.25);
-        if(captureMode == SessionInfo.SINGLE_FRAME){
-            mHorizSlider.setAlpha(0);
-            mHorizSlider.setEnabled(false);
-        }
-
-        mVertSlider = findViewById(R.id.v_seekbar);
-        mVertSlider.setAlpha(0.25f);
-        mVertSlider.setProgress(50);
-
-        mLibraryButton = findViewById(R.id.libraryButton);
-
-        mCaptureMode = findViewById(R.id.captureMode);
-        mBrightnessLabel = findViewById(R.id.brightnessLabel);
-
+        frameCount = 2;
+        // FindViewByID's and setAlpha's
+        initIUComponents();
         setUIHandlers();
 
         cameraView.addCameraListener(new CameraListener() {
@@ -99,12 +85,30 @@ public class MainActivity extends Activity {
         });
 
         checkPerms();
-        mHorizSlider.setProgress(40);
+
 
         dbHelper = ImageDbHelper.getInstance(this);
         dbHelper.open();
 
 
+    }
+
+    private void initIUComponents(){
+        cameraView = findViewById(R.id.camera_view);
+
+        mCameraButton = findViewById(R.id.imageButton);
+
+
+        mVertSlider = findViewById(R.id.v_seekbar);
+        mVertSlider.setAlpha(0.25f);
+        mVertSlider.setProgress(50);
+
+        mLibraryButton = findViewById(R.id.libraryButton);
+
+        mCaptureMode = findViewById(R.id.captureMode);
+        mBrightnessLabel = findViewById(R.id.brightnessLabel);
+        frameCountButton = findViewById(R.id.frameCountButton);
+        frameCountButton.setAlpha(0);
     }
 
     private void checkPerms(){
@@ -198,18 +202,16 @@ public class MainActivity extends Activity {
                 switch(captureMode){
                     case SessionInfo.SINGLE_FRAME:
                         mCaptureMode.setBackgroundResource(R.drawable.single_mode);
-                        mHorizSlider.setAlpha(0);
-                        mHorizSlider.setEnabled(false);
+                        frameCountButton.setEnabled(false);
+                        frameCountButton.setAlpha(0);
                         break;
                     case SessionInfo.LOWLIGHT_COMPOSIT:
                         mCaptureMode.setBackgroundResource(R.drawable.composite_mode);
-                        mHorizSlider.setAlpha(1);
-                        mHorizSlider.setEnabled(true);
+                        frameCountButton.setEnabled(true);
+                        frameCountButton.setAlpha(1);
                         break;
                     case SessionInfo.SUBJECT_COMPOSIT:
                         mCaptureMode.setBackgroundResource(R.drawable.subject_mode);
-                        mHorizSlider.setAlpha(1);
-                        mHorizSlider.setEnabled(true);
                         break;
                     default:
                         break;
@@ -234,29 +236,17 @@ public class MainActivity extends Activity {
             }
         });
 
-        mHorizSlider.setOnSeekBarChangeListener(
-                new SeekBar.OnSeekBarChangeListener() {
-                    @Override
-                    public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-
-                    }
-
-                    @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) {
-                        mHorizSlider.setAlpha(1);
-
-                    }
-
-                    @Override
-                    public void onStopTrackingTouch(SeekBar seekBar) {
-                        mHorizSlider.setAlpha((float) 0.25);
-
-                        frameCount = mHorizSlider.getProgress()/10 + 1;
-                        Toast.makeText(getApplicationContext(), "Frames: " + frameCount, Toast.LENGTH_SHORT).show();
-
-                    }
+        frameCountButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                frameCount++;
+                if(frameCount > maxFrameCountAllowed){
+                    frameCount = 2;
                 }
-        );
+
+                frameCountButton.setText(String.valueOf(frameCount));
+            }
+        });
 
         //cameraView.setRotation(90); // UnComment this if the preview is rotated 90 degrees.
 
@@ -353,7 +343,16 @@ public class MainActivity extends Activity {
                     cameraView.captureSnapshot();
                 }else{
                     Toast.makeText(this,"Processing...",Toast.LENGTH_SHORT).show();
-                    builder.start();
+                    HandlerThread ht = new HandlerThread("CompositBuilder");
+                    ht.start();
+                    Looper looper = ht.getLooper();
+                    while (looper == null){
+                        System.out.println("waiting");
+                    }
+                    Handler handler = new Handler(looper);
+                    builder.setHandlerThread(ht);
+                    handler.post(builder);
+
                 }
 
                 break;
@@ -420,9 +419,6 @@ public class MainActivity extends Activity {
     }
     private void killBilder(){
         Toast.makeText(this,"Done!",Toast.LENGTH_SHORT).show();
-        builder.interrupt();
         builder = null;
     }
-
-
 }

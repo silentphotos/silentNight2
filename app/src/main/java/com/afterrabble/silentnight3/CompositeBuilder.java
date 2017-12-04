@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.os.HandlerThread;
 import android.renderscript.Allocation;
 import android.renderscript.RenderScript;
 import android.util.Log;
@@ -20,12 +21,13 @@ import java.util.UUID;
  * Created by AaronR on 11/27/17.
  */
 
-public class CompositeBuilder extends Thread {
+public class CompositeBuilder implements Runnable {
     private static String TAG = "COMPOSITEBUILDER";
     private String compositID ;
     private int totalFrameCount;
     private int currFrameCount;
     private int finishedFrameCount;
+    private HandlerThread ht;
     private int width;
     private int height;
 
@@ -64,8 +66,8 @@ public class CompositeBuilder extends Thread {
     }
 
     @Override
-    public void start(){
-        super.start();
+    public void run(){
+
         System.out.println("Thread Is Running");
         for (int i = 0; i < jpgs.size(); i++) {
             decodeJpegByteArray(jpgs.get(i));
@@ -154,7 +156,16 @@ public class CompositeBuilder extends Thread {
     }
 
     public boolean isFinished(){
-        return finishedFrameCount ==  totalFrameCount-1;
+        if(finishedFrameCount ==  totalFrameCount-1){
+            ht.quit();
+            return true;
+        }else{
+            return false;
+        }
 
+    }
+
+    public void setHandlerThread(HandlerThread ht){
+        this.ht = ht;
     }
 }
