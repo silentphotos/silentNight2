@@ -5,6 +5,9 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import com.afterrabble.silentnight3.db.ImageDbHelper;
+
+import java.io.File;
+import java.util.Comparator;
 import java.util.List;
 
 public class PhotosActivity extends AppCompatActivity {
@@ -20,12 +23,24 @@ public class PhotosActivity extends AppCompatActivity {
         dbHelper.open();
 
         List<String> imagesList = dbHelper.getAllImagePaths();
-        String[] images = imagesList.toArray(new String[imagesList.size()]);
-
         List<String> imageDates = dbHelper.getAllImageDates();
+
+        // If the file was deleted remove it from the list so it's not shown
+        // However this doenst seem to be working
+        for (int i = 0; i < imagesList.size(); i++) {
+            if(!(new File(imagesList.get(i)).exists())){
+
+                imagesList.remove(i);
+                imageDates.remove(i);
+            }
+        }
+
+
+        String[] images = imagesList.toArray(new String[imagesList.size()]);
         String[] dates = imageDates.toArray(new String[imageDates.size()]);
 
-        recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
+
+        recyclerView = findViewById(R.id.recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(new ImagesAdapter(this, images, dates));
     }
