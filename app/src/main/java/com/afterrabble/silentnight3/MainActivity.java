@@ -398,6 +398,7 @@ public class MainActivity extends Activity {
                 fOut.close();
                 Log.i(TAG, "stepFinished: SUCCESSFULLY saved Image to " + file_path);
                 notifyMediaStore(file.getPath());
+                saveImageToDb(file.getAbsolutePath());
             } catch (IOException ioe) {
                 ioe.printStackTrace();
                 Log.i(TAG, "stepFinished: Failed to saved Image to " + file_path);

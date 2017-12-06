@@ -43,12 +43,6 @@ class SavePhotoTask extends AsyncTask<byte[], String, String> {
 
             fos.write(jpeg[0]);
             fos.close();
-
-//            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-//            Date date = new Date();
-//
-//            dbHelper.createImage(photo.getPath(), dateFormat.format(date).toString(), 0);
-
         }
         catch (java.io.IOException e) {
             Log.i("SAVEPHOTOTASK", "Exception in photoCallback", e);

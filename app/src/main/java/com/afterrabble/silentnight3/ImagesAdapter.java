@@ -1,6 +1,7 @@
 package com.afterrabble.silentnight3;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -8,6 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
 
@@ -36,9 +40,21 @@ public class ImagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
         ((Item)holder).textView.setText(imageDates[position]);
-        ((Item)holder).imageView.setImageURI(Uri.fromFile(new File(images[position])));
+        Picasso.with(context)
+                .load(new File(images[position]))
+                .resize(200, 200)
+                .centerCrop()
+                .into(((Item)holder).imageView);
+        ((Item)holder).imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ImageViewActivity.currentImagePath = images[position];
+                Intent myIntent = new Intent(context, ImageViewActivity.class);
+                context.startActivity(myIntent);
+            }
+        });
     }
 
     @Override

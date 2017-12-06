@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SilentNight3</string>
+    <string name="title_activity_image_view">ImageViewActivity</string>
 </resources>
