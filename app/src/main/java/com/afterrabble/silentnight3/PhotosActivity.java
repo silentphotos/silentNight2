@@ -4,11 +4,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.widget.LinearLayout;
-
 import com.afterrabble.silentnight3.db.ImageDbHelper;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public class PhotosActivity extends AppCompatActivity {
@@ -26,8 +22,11 @@ public class PhotosActivity extends AppCompatActivity {
         List<String> imagesList = dbHelper.getAllImagePaths();
         String[] images = imagesList.toArray(new String[imagesList.size()]);
 
+        List<String> imageDates = dbHelper.getAllImageDates();
+        String[] dates = imageDates.toArray(new String[imageDates.size()]);
+
         recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new ImagesAdapter(this, images));
+        recyclerView.setAdapter(new ImagesAdapter(this, images, dates));
     }
 }

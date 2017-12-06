@@ -86,6 +86,18 @@ public class ImageDbHelper extends SQLiteOpenHelper {
         return paths;
     }
 
+    public List<String> getAllImageDates() {
+        List<String> dates = new ArrayList<>();
+
+        Cursor cursor = database.rawQuery("select date from images", null);
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            dates.add(cursor.getString(0));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return dates;
+    }
 
 
     public Image createImage(String path, String date, String groupId) {

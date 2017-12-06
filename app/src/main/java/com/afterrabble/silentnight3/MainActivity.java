@@ -90,6 +90,7 @@ public class MainActivity extends Activity {
         dbHelper = ImageDbHelper.getInstance(this);
         dbHelper.open();
 
+
     }
 
     private void initIUComponents(){
@@ -406,7 +407,8 @@ public class MainActivity extends Activity {
                         fOut.flush();
                         fOut.close();
                         notifyMediaStore(file.getPath());
-                        dbHelper.createImage(file.getAbsolutePath(), new Date().toString(), id);
+
+                        saveImageToDb(file.getAbsolutePath());
 
                     } catch (IOException ioe) {
                         ioe.printStackTrace();
@@ -425,7 +427,7 @@ public class MainActivity extends Activity {
             };
 
             handler.post(runner);
-            
+
             //new MyAsyncTask(runner).doInBackground();
 
         }
