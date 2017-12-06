@@ -90,7 +90,6 @@ public class MainActivity extends Activity {
         dbHelper = ImageDbHelper.getInstance(this);
         dbHelper.open();
 
-
     }
 
     private void initIUComponents(){
@@ -382,30 +381,53 @@ public class MainActivity extends Activity {
     }
 
     private void stepFinished(){
+
         if (builder.isFinished()) {
+            final HandlerThread ht = new HandlerThread("saver");
+            ht.start();
+            final Looper looper = ht.getLooper();
+            Handler handler = new Handler(looper);
 
-            Log.i(TAG, "stepFinished:");
-            String file_path = Environment.getExternalStorageDirectory().getAbsolutePath();
-            File dir = new File(file_path);
-            if (!dir.exists())
-                dir.mkdirs();
-            File file = new File(dir, "compositStep" + builder.getID() + ((new Date().getTime()) + ".png"));
-            Bitmap bmp = builder.getComposite();
-            try {
-                FileOutputStream fOut = new FileOutputStream(file);
-                bmp.compress(Bitmap.CompressFormat.PNG, 85, fOut);
-                fOut.flush();
-                fOut.close();
-                Log.i(TAG, "stepFinished: SUCCESSFULLY saved Image to " + file_path);
-                notifyMediaStore(file.getPath());
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-                Log.i(TAG, "stepFinished: Failed to saved Image to " + file_path);
+            final String id = builder.getID();
+            final Bitmap bmp = builder.getComposite();
+            Runnable runner = new Runnable() {
+                @Override
+                public void run() {
+                    String file_path = Environment.getExternalStorageDirectory().getAbsolutePath();
+                    File dir = new File(file_path);
+                    if (!dir.exists())
+                        dir.mkdirs();
+                    File file = new File(dir, "compositStep" + id + ((new Date().getTime()) + ".png"));
 
-            }
-            Log.i(TAG, "stepFinished:");
 
-            killBilder();
+                    try {
+                        FileOutputStream fOut = new FileOutputStream(file);
+                        bmp.compress(Bitmap.CompressFormat.PNG, 85, fOut);
+                        fOut.flush();
+                        fOut.close();
+                        notifyMediaStore(file.getPath());
+                        dbHelper.createImage(file.getAbsolutePath(), new Date().toString(), id);
+
+                    } catch (IOException ioe) {
+                        ioe.printStackTrace();
+                        Log.i(TAG, "stepFinished: Failed to saved Image to " + file_path);
+
+                    }
+
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            killBilder();
+                            ht.quit();
+                        }
+                    });
+                }
+            };
+
+            handler.post(runner);
+            
+            //new MyAsyncTask(runner).doInBackground();
+
         }
 
     }

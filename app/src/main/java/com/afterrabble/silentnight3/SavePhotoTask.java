@@ -1,5 +1,6 @@
 package com.afterrabble.silentnight3;
 
+import android.graphics.ImageFormat;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -25,11 +26,9 @@ class SavePhotoTask extends AsyncTask<byte[], String, String> {
     String imageName;
 
     @Override
-    protected String doInBackground(byte[]... jpeg) {
-
+    protected String doInBackground(byte[]... img) {
 
         imageName = UUID.randomUUID().toString();
-
         imageName = imageName +".jpg";
 
         File photo = new File(Environment.getExternalStorageDirectory(), imageName);
@@ -41,7 +40,7 @@ class SavePhotoTask extends AsyncTask<byte[], String, String> {
         try {
             FileOutputStream fos = new FileOutputStream(photo.getPath());
 
-            fos.write(jpeg[0]);
+            fos.write(img[0]);
             fos.close();
 
 //            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -57,6 +56,7 @@ class SavePhotoTask extends AsyncTask<byte[], String, String> {
 
         return(photo.getPath());
     }
+
 
     @Override
     protected void onPostExecute(String s) {
