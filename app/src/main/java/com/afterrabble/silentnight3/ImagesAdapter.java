@@ -42,15 +42,16 @@ public class ImagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
         ((Item)holder).textView.setText(imageDates[position]);
+
         Picasso.with(context)
-                .load(new File(images[position]))
+                .load(new File(images[images.length - 1 - position]))
                 .resize(200, 200)
                 .centerCrop()
                 .into(((Item)holder).imageView);
         ((Item)holder).imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ImageViewActivity.currentImagePath = images[position];
+                ImageViewActivity.currentImagePath = images[images.length - 1 - position];
                 Intent myIntent = new Intent(context, ImageViewActivity.class);
                 context.startActivity(myIntent);
             }
